@@ -1,0 +1,77 @@
+name: Deploy to publish branch
+
+# Trigger the workflow on pull request merges into develop
+on:
+  pull_request:
+    branches:
+      - develop
+    types:
+      - closed  # When a pull request is closed (includes merged PRs)
+
+permissions:
+  contents: write  # Provide write access to the repository
+
+jobs:
+  build-and-deploy:
+    if: github.event.pull_request.merged == true  # Ensure it runs only if the PR is merged
+
+    runs-on: ubuntu-latest
+
+    steps:
+      # Step 1: Checkout the develop branch
+      - name: Checkout code
+        uses: actions/checkout@v3
+        with:
+          ref: develop
+
+      # Step 2: Set up Node.js with the latest version
+      - name: Set up Node.js
+        uses: actions/setup-node@v3
+        with:
+          node-version: 'latest'  # Use the latest Node.js version
+
+      # Step 3: Install dependencies
+      - name: Install dependencies
+        run: npm install
+
+      # Step 4: Run the prepublishOnly script
+      - name: Run prepublishOnly
+        run: npm run prepublishOnly
+
+      # Step 5: Fetch and prepare the publish branch
+      - name: Fetch and checkout the publish branch
+        run: |
+          git fetch origin
+          git checkout publish || git checkout --orphan publish  # If publish branch doesn't exist, create it
+
+      # Step 6: Clean up unnecessary files
+      - name: Clean up unnecessary files
+        run: |
+          rm -rf src/ test/ .gitignore tsconfig.json
+
+      # Step 7: Check if there are any changes to commit
+      - name: Check for changes
+        id: check_changes
+        run: |
+          git add .
+          if git diff --cached --quiet; then
+            echo "No changes to commit" && exit 0
+          else
+            echo "Changes detected" && exit 1
+        continue-on-error: true
+
+      # Step 8: Commit and push the build files to the publish branch only if there are changes
+      - name: Push build to publish branch
+        if: steps.check_changes.outcome == 'failure'  # Only push if changes are detected
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        run: |
+          git config --global user.name "github-actions[bot]"
+          git config --global user.email "github-actions[bot]@users.noreply.github.com"
+          
+          PR_NUMBER=${{ github.event.pull_request.number }}
+          PR_URL="https://github.com/${{ github.repository }}/pull/${PR_NUMBER}"
+          
+          # Commit and push changes
+          git commit -m "Auto build from develop branch on pull request #$PR_NUMBER - $PR_URL"
+          git push --force origin publish
