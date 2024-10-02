@@ -1,0 +1,35 @@
+name: Build Check
+
+# Trigger the workflow on pull requests targeting the develop branch
+on:
+  pull_request:
+    branches:
+      - develop
+
+permissions:
+  contents: read  # Read access is enough for this workflow
+
+jobs:
+  verify-build:
+    runs-on: ubuntu-latest
+
+    steps:
+      # Step 1: Checkout the current pull request's code
+      - name: Checkout code
+        uses: actions/checkout@v4
+        with:
+          ref: ${{ github.head_ref }}  # Checks out the code of the current PR
+
+      # Step 2: Set up Node.js with the corresponding version
+      - name: Set up Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: 20.x
+
+      # Step 3: Install dependencies
+      - name: Install dependencies
+        run: npm install
+
+      # Step 4: Run the prepublishOnly script to ensure the build works
+      - name: Check build with prepublishOnly
+        run: npm run prepublishOnly
