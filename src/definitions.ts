@@ -10,7 +10,6 @@ export interface CapacitorHealthkitPlugin {
    * @param queryOptions defines the type of data and the timeframe which shall be queried, a limit can be set to reduce the number of results.
    */
   queryHKitSampleType<T>(queryOptions:SingleQueryOptions): Promise<QueryOutput<T>>;
-  queryHKitSampleTypes<T>(queryOptions:SingleQueryOptions): Promise<QueryOutput<T>>;
   /**
    * This functions resolves if HealthKitData is available it uses the native HKHealthStore.isHealthDataAvailable() funtion of the HealthKit .
    */
@@ -162,5 +161,6 @@ export enum SampleNames {
   BASAL_BODY_TEMPERATURE = 'basalBodyTemperature',
   BODY_TEMPERATURE = 'bodyTemperature',
   BLOOD_PRESSURE_SYSTOLIC = 'bloodPressureSystolic',
-  BLOOD_PRESSURE_DIASTOLIC = 'bloodPressureDiastolic'
+  BLOOD_PRESSURE_DIASTOLIC = 'bloodPressureDiastolic',
+  BLOOD_PRESSURE_DIASTOLICS = 'bloodPressureDiastolics'
 }
