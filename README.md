@@ -6,7 +6,7 @@ Disclaimer : _for now only some of the HK data base, in the future the retrieve 
 
 ## Getting Started
 
-# Deploy
+# Re-Deploy
 
 ### Prerequisites
 
